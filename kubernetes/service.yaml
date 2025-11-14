@@ -9,4 +9,4 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 5000
-  type: NodePort
+  type: NodePort # (Action 3: Service for load balancing - This is correct)
