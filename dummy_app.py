@@ -1,5 +1,4 @@
 # dummy_app.py
-print("This is a test function")
 
 
 def simple_add(a, b):
