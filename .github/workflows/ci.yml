@@ -1,0 +1,46 @@
+# .github/workflows/ci.yml
+
+name: CI Build and Test
+
+on:
+  push: # Triggers on a push to *any* branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Use a standard Linux virtual machine
+
+    steps:
+      # Step 1: Check out the code
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Step 3: Install dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          pip install -r requirements.txt
+
+      # Step 4: Run Linting (Flake8)
+      - name: Lint with flake8
+        run: |
+          # check for Python syntax errors
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # check for max-line-length (as requested in assignment)
+          flake8 . --count --max-line-length=90 --show-source --statistics
+
+      # Step 5: Run Unit Tests (Pytest)
+      - name: Test with pytest
+        run: |
+          pytest
+
+      # Step 6: Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build . -t flask-k8s-ci-cd-assignment:latest

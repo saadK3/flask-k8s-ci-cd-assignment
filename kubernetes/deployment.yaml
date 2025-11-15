@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 3  # (Action 3: Multiple replicas for scaling)
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1       # (Action 3: Rolling update strategy)
+      maxUnavailable: 1 # How many pods can be down during update
+      
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: flask-app:latest
+        imagePullPolicy: IfNotPresent # Tells K8s to use local image if 'latest'
+        ports:
+        - containerPort: 5000
+          
+        resources: # (Action 3: Resource limits and requests)
+          requests:
+            memory: "64Mi"  # "I need at least this much RAM"
+            cpu: "250m"     # "I need at least this much CPU"
+          limits:
+            memory: "128Mi" # "Don't let me use more than this much RAM"
+            cpu: "500m"      # "Don't let me use more than this much CPU"
