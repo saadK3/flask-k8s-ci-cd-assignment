@@ -1,7 +1,7 @@
-// Jenkinsfile
+// Jenkinsfile (Windows Version)
 
 pipeline {
-    agent any // This means Jenkins can run this on any available machine
+    agent any
 
     stages {
 
@@ -10,14 +10,11 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
 
-                // This is a CRUCIAL trick for Minikube.
-                // It tells your terminal to use Minikube's *internal* Docker.
-                // This builds the image *inside* the Minikube virtual machine.
-                sh 'eval $(minikube -p minikube docker-env)'
+                // This is the Windows/PowerShell way to use Minikube's Docker
+                powershell 'minikube -p minikube docker-env | Invoke-Expression'
 
-                // Now, 'docker build' builds the image where Minikube can find it.
-                // This is why 'imagePullPolicy: IfNotPresent' (from Task 3) works.
-                sh 'docker build -t flask-app:latest .'
+                // 'bat' is the Windows version of 'sh'
+                bat 'docker build -t flask-app:latest .'
 
                 echo 'Docker image built successfully.'
             }
@@ -27,10 +24,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
-
-                // This command tells kubectl to apply our new configurations.
-                // It will automatically start a 'RollingUpdate' because of your Task 3 work.
-                sh 'kubectl apply -f kubernetes/'
+                bat 'kubectl apply -f kubernetes/'
             }
         }
 
@@ -38,24 +32,19 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 echo 'Verifying deployment rollout...'
+                bat 'kubectl rollout status deployment/flask-app-deployment'
 
-                // This command waits for the rolling update to be 100% complete
-                sh 'kubectl rollout status deployment/flask-app-deployment'
-
-                // This prints the final status of our app
                 echo 'Deployment successful! Showing running pods and services:'
-                sh 'kubectl get pods,services'
+                bat 'kubectl get pods,services'
             }
         }
     }
 
     post {
-        // This 'always' block runs at the end, whether the pipeline passed or failed
         always {
             echo 'Pipeline finished. Cleaning up shell environment...'
-            // This 'unsets' the Minikube Docker environment variables.
-            // It's just good practice to clean up.
-            sh 'eval $(minikube -p minikube docker-env -u)'
+            // This is the Windows/PowerShell way to unset the env vars
+            powershell 'minikube -p minikube docker-env -u | Invoke-Expression'
         }
     }
 }
