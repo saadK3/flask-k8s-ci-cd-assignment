@@ -10,13 +10,12 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
 
-                // This is the Windows/PowerShell way to use Minikube's Docker
-                powershell 'minikube -p minikube docker-env | Invoke-Expression'
+                powershell '''
+            minikube -p minikube docker-env | Invoke-Expression
+            docker build -t flask-app:latest .
+        '''
 
-                // 'bat' is the Windows version of 'sh'
-                bat 'docker build -t flask-app:latest .'
-
-                echo 'Docker image built successfully.'
+            echo 'Docker image built successfully.'
             }
         }
 
